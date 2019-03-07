@@ -8,13 +8,14 @@
 
 #include <fstream>	//https://teratail.com/questions/141589
 
-const char ver[]="0.1";
-const char input_file[]="input.csv";
-const char output_file[]="output.csv";
+#define VER 0.2
+#define MAX_NUM 60	//最大出席番号
+#define INPUT_FILE "input.csv"	//入力ファイル名
+#define OUPUT_FILE "output.csv"	//出力ファイル名
 
 const short max=60;			//人数（欠番含む）
 short seats[10][10]={{-1}};	//[行][列]
-bool settled[max]={false};
+bool settled[MAX_NUM]={false};
 short count=0;
 short col_num=0;
 short row_num=0;
@@ -27,50 +28,34 @@ void lottery();
 void output();
 
 int main(){
-	std::cout<<"席替えプログラム (c)h28i13 ver"<<ver<<std::endl;
+	std::cout<<"席替えプログラム (c)h28i13 ver"<<VER<<std::endl;
 	srand((unsigned)time(NULL));
 	for(int i=0;i<10;i++)
 		for(int j=0;j<10;j++)
 			seats[i][j]=-1;
+
+	for(int i=0;i<MAX_NUM;i++)
+		settled[i]=false;
 	while(true){
-		std::string s;
+		std::cout<<"seed値を入力（0~4,294,967,295）（0:UNIX時間をseed値にします）"<<std::endl;
 		std::cout<<">>";
-		std::cin>>s;
-		short num;
-		if(std::any_of(s.cbegin(), s.cend(), isdigit)){num=std::stoi(s);}
-		else{std::cout<<"err"<<std::endl<<std::endl;continue;}
-		if(num==-1){
-			output();
-			std::cout<<"終了します..."<<std::endl;
-			return 0;
-		}else if(num==1){
-			std::cout<<"固定席表示"<<std::endl;
-			get_lost(true);
-			get_const();
-			show();
-		}else if(num==2){
-			std::cout<<"seed値を入力（0~4,294,967,295）"<<">>";
-			unsigned seed;
-			std::cin>>seed;
-			srand(seed);
-			for(int i=0;i<10;i++)
-				for(int j=0;j<10;j++)
-					seats[i][j]=-1;
-			for(int i=0;i<max;i++)
-				settled[i]=false;
-			count=0;
-			get_lost(false);
-			get_const();
-		}else if(num==3){
-			std::cout<<"抽選結果"<<std::endl;
-			for(int i=0;i<max;i++)
-				lottery();
-			show();
+		std::string seed;
+		std::cin>>seed;
+		if(std::any_of(seed.cbegin(), seed.cend(), isdigit)){
+			srand(std::stoi(seed));
+			break;
 		}else{
-			std::cout<<"err"<<std::endl<<std::endl;continue;
+			std::cout<<"範囲エラー．0か整数を入力してください"<<std::endl;
 		}
-		std::cout<<std::endl;
 	}
+	get_lost(true);
+	get_const();
+	for(int i=0;i<MAX_NUM;i++)
+		lottery();
+	show();
+	std::cout<<"抽選結果を"<<OUPUT_FILE<<"に保存しました．"<<std::endl;
+	output();
+	return 0;
 }
 
 long CountNumbersOfTextLines( const char* filePath ){
@@ -91,8 +76,7 @@ long CountNumbersOfTextLines( const char* filePath ){
 }
 
 void get_lost(bool show){
-	std::ifstream stream(input_file);
-	//std::ifstream stream("input.csv");
+	std::ifstream stream(INPUT_FILE);
 	std::string line;
 	const std::string delim = ",";
 		// delimを区切り文字として切り分け、intに変換してsettled[]に格納する
@@ -110,7 +94,7 @@ void get_lost(bool show){
 }
 
 void get_const(){
-	std::ifstream stream(input_file);
+	std::ifstream stream(INPUT_FILE);
  	std::string line;
   	const std::string delim = ",";
 	int row = 0;
@@ -137,7 +121,7 @@ void get_const(){
 
 void show(){
 	std::cout<<"     [教卓]"<<std::endl;
-	for(int i=0;i<(CountNumbersOfTextLines(input_file)-1);i++){
+	for(int i=0;i<(CountNumbersOfTextLines(INPUT_FILE)-1);i++){
 		for(int j=0;j<10;j++){
 			if(seats[i][j]==-1){
 				std::cout<<"   ";
@@ -154,11 +138,11 @@ void show(){
 }
 
 void lottery(){
-	if(count>max-1){
+	if(count>MAX_NUM-1){
 		return;
 	}
 	short n=0;
-	n=rand()%max;	//rand()%(B-A+1)+A;	AからBまでの乱数
+	n=rand()%MAX_NUM;	//rand()%(B-A+1)+A;	AからBまでの乱数
 	if(settled[n]==false){
 	bool search=true;
 	for(int i=0;i<10;i++){
@@ -178,7 +162,7 @@ void lottery(){
 }
 
 void output(){
-	std::ofstream ofs(output_file,std::ios::app);
+	std::ofstream ofs(OUPUT_FILE,std::ios::app);
 	ofs<<"     [教卓]"<<std::endl;
 	for(int i=0;i<row_num;i++){
 		for(int j=0;j<col_num;j++){
