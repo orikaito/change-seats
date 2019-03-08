@@ -8,8 +8,8 @@
 
 #include <fstream>	//https://teratail.com/questions/141589
 
-#define VER 0.2
-#define MAX_NUM 60	//最大出席番号
+#define VER 0.3
+#define MAX_NUM 56	//最大出席番号
 #define INPUT_FILE "input.csv"	//入力ファイル名
 #define OUPUT_FILE "output.csv"	//出力ファイル名
 
@@ -42,10 +42,18 @@ int main(){
 		std::string seed;
 		std::cin>>seed;
 		if(std::any_of(seed.cbegin(), seed.cend(), isdigit)){
-			srand(std::stoi(seed));
-			break;
+			long int s = std::stoi(seed);
+			if(s>0){
+				srand((unsigned)s);
+				break;
+			}else if(s==0){
+				srand((unsigned)time(NULL));
+				break;
+			}else{
+				std::cout<<"範囲エラー．\"0~4,294,967,295\"の数を入力してください"<<std::endl;
+			}
 		}else{
-			std::cout<<"範囲エラー．0か整数を入力してください"<<std::endl;
+			std::cout<<"範囲エラー．\"0~4,294,967,295\"の数を入力してください"<<std::endl;
 		}
 	}
 	get_lost(true);
