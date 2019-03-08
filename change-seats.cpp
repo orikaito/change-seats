@@ -8,15 +8,13 @@
 
 #include <fstream>	//https://teratail.com/questions/141589
 
-#define VER 0.3
+#define VER 0.4
 #define MAX_NUM 56	//最大出席番号
 #define INPUT_FILE "input.csv"	//入力ファイル名
-#define OUPUT_FILE "output.csv"	//出力ファイル名
+#define OUPUT_FILE "output.txt"	//出力ファイル名
 
-const short max=60;			//人数（欠番含む）
 short seats[10][10]={{-1}};	//[行][列]
 bool settled[MAX_NUM]={false};
-short count=0;
 short col_num=0;
 short row_num=0;
 
@@ -37,7 +35,7 @@ int main(){
 	for(int i=0;i<MAX_NUM;i++)
 		settled[i]=false;
 	while(true){
-		std::cout<<"seed値を入力（0~4,294,967,295）（0:UNIX時間をseed値にします）"<<std::endl;
+		std::cout<<"seed値を入力（0~4,294,967,295）（0:現在のUNIX時間をseed値にします）"<<std::endl;
 		std::cout<<">>";
 		std::string seed;
 		std::cin>>seed;
@@ -61,6 +59,13 @@ int main(){
 	for(int i=0;i<MAX_NUM;i++)
 		lottery();
 	show();
+	for(int i=0;i<MAX_NUM;i++){
+		if(settled[i]==false){
+			std::cout<<"抽選途中でエラーが発生しました．"<<std::endl;
+			std::cout<<"\"MAX_NUM\"や\""<<INPUT_FILE<<"\"１行目の欠番の人数が正しいか，抽選対象の席の数が正しいかを確認してください．"<<std::endl;
+			return 0;
+		}
+	}
 	std::cout<<"抽選結果を"<<OUPUT_FILE<<"に保存しました．"<<std::endl;
 	output();
 	return 0;
@@ -94,8 +99,7 @@ void get_lost(bool show){
     	std::string token = line.substr(spos,(epos = line.find_first_of(delim, spos))-spos);
 		if(std::stoi(token)>0){
 			settled[std::stoi(token)-1] = true;
-			count++;
-			if(show==true)std::cout<<std::stoi(token)<<",";
+			if(show==true)std::cout<<std::stoi(token)<<" ";
 		}
     }
 	std::cout<<std::endl;
@@ -115,7 +119,6 @@ void get_const(){
       		std::string token = line.substr(spos,(epos = line.find_first_of(delim, spos))-spos);
       		seats[row][col++] = std::stoi(token);
 			if(std::stoi(token)>0){
-				count++;
 				settled[std::stoi(token)-1]=true;
 			}
 			if(col>col_num)
@@ -134,7 +137,12 @@ void show(){
 			if(seats[i][j]==-1){
 				std::cout<<"   ";
 			}else{
-				if(seats[i][j]<10){
+				if(seats[i][j]==0){
+					std::cout<<"00 ";
+					std::cout<<"\n空席があります．"<<std::endl;
+					std::cout<<"\"MAX_NUM\"や\""<<INPUT_FILE<<"\"１行目の欠番の人数が正しいか，抽選対象の席の数が正しいかを確認してください．"<<std::endl;
+					return;
+				}else if(seats[i][j]<10){
 					std::cout<<0<<seats[i][j]<<" ";
 				}else{
 					std::cout<<seats[i][j]<<" ";
@@ -146,7 +154,13 @@ void show(){
 }
 
 void lottery(){
-	if(count>MAX_NUM-1){
+	short c=0;
+	for(int i=0;i<MAX_NUM;i++){
+		if(settled[i]==true){
+			c++;
+		}
+	}
+	if(c==MAX_NUM){
 		return;
 	}
 	short n=0;
@@ -157,7 +171,6 @@ void lottery(){
 		for(int j=0;j<10;j++){
 			if(seats[i][j]==0){
 				seats[i][j]=n+1;
-				count++;
 				settled[n]=true;
 				search=false;
 				return;
