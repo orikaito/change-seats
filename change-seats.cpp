@@ -8,8 +8,8 @@
 
 #include <fstream>	//https://teratail.com/questions/141589
 
-#define VER 0.4
-#define MAX_NUM 56	//最大出席番号
+#define VER 0.5
+#define MAX_NUM 34	//最大出席番号
 #define INPUT_FILE "input.csv"	//入力ファイル名
 #define OUPUT_FILE "output.txt"	//出力ファイル名
 
@@ -19,7 +19,6 @@ short col_num=0;
 short row_num=0;
 
 long CountNumbersOfTextLines( const char* filePath );//http://www.coderesume.com/modules/answer/?quiz=cpp00700
-void get_lost(bool show);
 void get_const();
 void show();
 void lottery();
@@ -54,15 +53,14 @@ int main(){
 			std::cout<<"範囲エラー．\"0~4,294,967,295\"の数を入力してください"<<std::endl;
 		}
 	}
-	get_lost(true);
 	get_const();
 	for(int i=0;i<MAX_NUM;i++)
 		lottery();
 	show();
 	for(int i=0;i<MAX_NUM;i++){
 		if(settled[i]==false){
-			std::cout<<"抽選途中でエラーが発生しました．"<<std::endl;
-			std::cout<<"\"MAX_NUM\"や\""<<INPUT_FILE<<"\"１行目の欠番の人数が正しいか，抽選対象の席の数が正しいかを確認してください．"<<std::endl;
+			std::cout<<"抽選途中で異差が生じました．"<<std::endl;
+			std::cout<<"\"MAX_NUM\"が正しいか，抽選対象の席の数が正しいかを確認してください．"<<std::endl;
 			return 0;
 		}
 	}
@@ -88,22 +86,6 @@ long CountNumbersOfTextLines( const char* filePath ){
 	return i;
 }
 
-void get_lost(bool show){
-	std::ifstream stream(INPUT_FILE);
-	std::string line;
-	const std::string delim = ",";
-		// delimを区切り文字として切り分け、intに変換してsettled[]に格納する
-	getline(stream, line);
-	if(show==true)std::cout<<"欠番:";
-    for ( std::string::size_type spos, epos = 0;(spos = line.find_first_not_of(delim, epos)) != std::string::npos;) {
-    	std::string token = line.substr(spos,(epos = line.find_first_of(delim, spos))-spos);
-		if(std::stoi(token)>0){
-			settled[std::stoi(token)-1] = true;
-			if(show==true)std::cout<<std::stoi(token)<<" ";
-		}
-    }
-	std::cout<<std::endl;
-}
 
 void get_const(){
 	std::ifstream stream(INPUT_FILE);
@@ -111,7 +93,6 @@ void get_const(){
   	const std::string delim = ",";
 	int row = 0;
   	int col;
-	getline(stream, line);
   	while ( getline(stream, line) ) {
     	col = 0;
     	// delimを区切り文字として切り分け、intに変換してdata[][]に格納する
@@ -124,7 +105,7 @@ void get_const(){
 			if(col>col_num)
 				col_num=col;
     	}
-    	//++row;
+
 		if(++row>row_num)
 			row_num=row;
   	}
@@ -132,7 +113,7 @@ void get_const(){
 
 void show(){
 	std::cout<<"     [教卓]"<<std::endl;
-	for(int i=0;i<(CountNumbersOfTextLines(INPUT_FILE)-1);i++){
+	for(int i=0;i<(CountNumbersOfTextLines(INPUT_FILE));i++){
 		for(int j=0;j<10;j++){
 			if(seats[i][j]==-1){
 				std::cout<<"   ";
@@ -140,7 +121,7 @@ void show(){
 				if(seats[i][j]==0){
 					std::cout<<"00 ";
 					std::cout<<"\n空席があります．"<<std::endl;
-					std::cout<<"\"MAX_NUM\"や\""<<INPUT_FILE<<"\"１行目の欠番の人数が正しいか，抽選対象の席の数が正しいかを確認してください．"<<std::endl;
+					std::cout<<"\"MAX_NUM\"が正しいか，抽選対象の席の数が正しいかを確認してください．"<<std::endl;
 					return;
 				}else if(seats[i][j]<10){
 					std::cout<<0<<seats[i][j]<<" ";
